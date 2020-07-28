@@ -33,6 +33,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var fs = __importStar(require("fs"));
+var asciichart = require('asciichart');
 var Person = /** @class */ (function () {
     function Person(_name, _lastName, _birthDate, _id) {
         this.name = _name;
@@ -80,7 +81,7 @@ var SalesMan = /** @class */ (function (_super) {
         enumerable: false,
         configurable: true
     });
-    //Metodo para poder inicializar vacio un SalesMan. Utilizado en la funcion de la linea66
+    //Metodo para poder inicializar vacio un SalesMan. Utilizado en la funcion de la linea67
     SalesMan.Empty = function () {
         return new SalesMan('', '', new Date(''), 0, 0, []);
     };
@@ -123,13 +124,22 @@ var EmployeesController = /** @class */ (function () {
     };
     /*Metodo q filtra las ventas de un Obj:SalesMan. Retorna un ARREGLO de Amount's
     la libreria AsciChart(no recibe por parametro objetos)*/
-    EmployeesController.prototype.getChart = function (docket) {
+    EmployeesController.prototype.getArraySales = function (docket) {
         var array = [];
         var employee = this.searchEmployee(docket);
         for (var i = 0; i < employee.sales.length; i++) {
             array.push(employee.sales[i].amount);
         }
         return array;
+    };
+    //Metodo para graficar las ventas de todos los empleados- Utiliza libreria asciiChart
+    EmployeesController.prototype.showCharts = function () {
+        var arreglos = [];
+        for (var i = 0; i < this.employeesList.length; i++) {
+            var docket = this.employeesList[i].docket;
+            arreglos.push(this.getArraySales(docket));
+        }
+        return asciichart.plot(arreglos, config);
     };
     return EmployeesController;
 }());
@@ -150,12 +160,11 @@ var arraySales1 = sales1.split('\r\n');
 //Ventas del mes de Julio, empleado.Legajo: 1002
 var sales2 = fs.readFileSync('sales1002.txt', 'utf-8');
 var arraySales2 = sales2.split('\r\n');
-//Instanciando vendedores:1y2 con las Prop. heredadas de obj:Person y las Prop. que lo diferencian(cuil,docket,sales[])
+//Instanciando vendedores con las Prop. heredadas de obj:Person y las Prop. que lo diferencian(docket,sales[])
 var salesMan1 = new SalesMan('Juan', 'Perez', new Date('1986-11-08'), 35789095, 1001, loadSales(arraySales1));
 var salesMan2 = new SalesMan('Pepito', 'Lopez', new Date('1992-03-05'), 95345675, 1002, loadSales(arraySales2));
 //Instanciando la empresa
 var company = new EmployeesController([salesMan1, salesMan2]);
-var asciichart = require('asciichart');
 //configuracion de Libreria AsciChart para que a cada empleado se le asigne un color en el Grafico.
 var config = {
     colors: [
@@ -165,7 +174,7 @@ var config = {
         undefined,
     ]
 };
-console.log(asciichart.plot([company.getChart(1001), company.getChart(1002)], config));
+console.log(company.showCharts());
 console.log('Ventas Julio-2020');
 console.log('color Azul:', company.totalSales(1001));
 console.log('color Verde:', company.totalSales(1002));

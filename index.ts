@@ -1,5 +1,6 @@
 import * as Asciichart from "asciichart";
 import * as fs from 'fs';
+let asciichart=require('asciichart');
 
 class Person{
     private name:string;
@@ -37,7 +38,7 @@ class SalesMan extends Person{
     public get sales():Sale[]{
         return this._sales;
     }
-    //Metodo para poder inicializar vacio un SalesMan. Utilizado en la funcion de la linea66
+    //Metodo para poder inicializar vacio un SalesMan. Utilizado en la funcion de la linea67
     static Empty():SalesMan{
         return new SalesMan('','',new Date(''),0,0,[]);
     }
@@ -82,7 +83,7 @@ class EmployeesController{
     } 
     /*Metodo q filtra las ventas de un Obj:SalesMan. Retorna un ARREGLO de Amount's
     la libreria AsciChart(no recibe por parametro objetos)*/
-    public getChart(docket:number):number[]{
+    public getArraySales(docket:number):number[]{
         let array:number[]=[];
         let employee:SalesMan=this.searchEmployee(docket);
         for(let i:number=0;i<employee.sales.length;i++){
@@ -90,6 +91,15 @@ class EmployeesController{
         }
         return array;   
     
+    }
+    //Metodo para graficar las ventas de todos los empleados- Utiliza libreria asciiChart
+    public showCharts():any{
+        let arreglos:number[][]=[];
+        for(let i:number=0;i<this.employeesList.length;i++){
+            let docket:number=this.employeesList[i].docket;
+            arreglos.push(this.getArraySales(docket));
+        }
+        return asciichart.plot(arreglos,config);
     }   
 }
 
@@ -112,7 +122,7 @@ let arraySales1: string[] = sales1.split('\r\n');
 let sales2:string=fs.readFileSync('sales1002.txt','utf-8');
 let arraySales2:string[]=sales2.split('\r\n');
 
-//Instanciando vendedores:1y2 con las Prop. heredadas de obj:Person y las Prop. que lo diferencian(cuil,docket,sales[])
+//Instanciando vendedores con las Prop. heredadas de obj:Person y las Prop. que lo diferencian(docket,sales[])
 let salesMan1:SalesMan=
     new SalesMan('Juan','Perez',new Date('1986-11-08'),35789095,1001,loadSales(arraySales1));
 
@@ -121,7 +131,6 @@ let salesMan2:SalesMan=
 //Instanciando la empresa
 let company:EmployeesController=new EmployeesController([salesMan1,salesMan2]);
 
-let asciichart=require('asciichart');
 //configuracion de Libreria AsciChart para que a cada empleado se le asigne un color en el Grafico.
 let config = {
     colors: [
@@ -131,7 +140,7 @@ let config = {
         undefined, // equivalent to default
     ]
 }
-console.log(asciichart.plot([company.getChart(1001),company.getChart(1002)],config));
+console.log(company.showCharts());
 console.log('Ventas Julio-2020');
 console.log('color Azul:',company.totalSales(1001));
 console.log('color Verde:',company.totalSales(1002));
